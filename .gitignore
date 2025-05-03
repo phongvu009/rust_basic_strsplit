@@ -1,0 +1,11 @@
+#Generate by Cargo
+debug/
+target/
+
+#backup file
+**/*.rs.bk
+
+#MSVC Windoes builds
+*.pdb
+
+.env
