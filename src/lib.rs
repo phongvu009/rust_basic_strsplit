@@ -1,19 +1,49 @@
 #![warn(missing_debug_implementations, rust_2018_idioms, missing_docs)]
 
 //create struct
-pub struct StrSplit {}
+pub struct StrSplit<'a> {
+    remainder: &'a str, // create variable in stack, &str reference to a string slice - borrowed
+    delimiter: &'a str, // String::from() creates string literal - stored in read-only memory
+}
 
 //add function
-impl StrSplit{
-    pub fn new(haystack: &str, delimiter: &str) -> Self{
-
+impl<'a> StrSplit<'a> {
+    pub fn new(haystack: &'a str, delimiter: &'a str) -> Self {
+        //return Struct itself
+        Self {
+            remainder: haystack,
+            delimiter,
+        }
     }
 }
 
 //implement trait
-impl Iterator for StrSplit{
+impl<'a> Iterator for StrSplit<'a> {
     //def a type
-    type Item=&str;
+    type Item = &'a str;
     //return Some() or None
-    fn next(&mut self) ->Option(Self::Item)
+    fn next(&mut self) -> Option<Self::Item> {
+        //find delimiter
+        if let Some(idx_next_delim) = self.remainder.find(self.delimiter) {
+            //&self.remainder[..next_dlim] borrowed
+            let until_delimiter = &self.remainder[..idx_next_delim];
+            //create ref - bss of the left portion
+            self.remainder = &self.remainder[(idx_next_delim + self.remainder.len())..];
+            Some(until_delimiter)
+        } else if self.remainder.is_empty() {
+            None
+        } else {
+            let rest = self.remainder;
+            self.remainder = &[];
+            Some(rest)
+        }
+    }
+}
+
+#[test]
+fn test_fn() {
+    let haystack = "a b c d";
+    let letters = StrSplit::new(haystack, " ");
+    //make comparision
+    assert_eq!(letters, vec!["a", "b", "c", "d"].into_iter());
 }
