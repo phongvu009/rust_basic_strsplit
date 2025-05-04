@@ -1,4 +1,4 @@
-#![warn(missing_debug_implementations, rust_2018_idioms, missing_docs)]
+//#![warn(missing_debug_implementations, rust_2018_idioms, missing_docs)]
 
 //create struct
 pub struct StrSplit<'a> {
@@ -28,13 +28,14 @@ impl<'a> Iterator for StrSplit<'a> {
             //&self.remainder[..next_dlim] borrowed
             let until_delimiter = &self.remainder[..idx_next_delim];
             //create ref - bss of the left portion
-            self.remainder = &self.remainder[(idx_next_delim + self.remainder.len())..];
+            self.remainder = &self.remainder[(idx_next_delim + self.delimiter.len())..];
             Some(until_delimiter)
         } else if self.remainder.is_empty() {
             None
         } else {
             let rest = self.remainder;
-            self.remainder = &[];
+            //assign longer lifetime &'static str instead of &'a str
+            self.remainder = "";
             Some(rest)
         }
     }
@@ -45,5 +46,5 @@ fn test_fn() {
     let haystack = "a b c d";
     let letters = StrSplit::new(haystack, " ");
     //make comparision
-    assert_eq!(letters, vec!["a", "b", "c", "d"].into_iter());
+    assert!(letters.eq(vec!["a", "b", "c", "d"].into_iter()));
 }
